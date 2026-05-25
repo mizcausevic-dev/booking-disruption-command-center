@@ -6,6 +6,208 @@ import {
   verification
 } from "./bookingDisruptionCommandCenterService";
 
+const STYLE = `
+  :root{
+    --bg:#070a0f; --panel:#0b1220; --panel2:#0a1426;
+    --line:rgba(120,255,170,.18); --line2:rgba(120,255,170,.10);
+    --text:#e9f3ff; --muted:rgba(233,243,255,.72); --muted2:rgba(233,243,255,.55);
+    --bert:#37ff8b; --bert2:#19c7ff;
+    --warn:#ffcc66; --bad:#ff5c7a; --good:#37ff8b; --plum:#b88cff;
+    --shadow: 0 18px 60px rgba(0,0,0,.55);
+    --radius: 18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:var(--sans); color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(55,255,139,.18), transparent 60%),
+      radial-gradient(900px 520px at 90% 0%, rgba(25,199,255,.16), transparent 55%),
+      radial-gradient(1000px 600px at 50% 110%, rgba(55,255,139,.10), transparent 60%),
+      linear-gradient(180deg, #05070c 0%, #070a0f 35%, #05070c 100%);
+    overflow-x:hidden;
+  }
+  .grid-bg{
+    position:fixed; inset:0; pointer-events:none; opacity:.12; z-index:-1;
+    background-image:
+      linear-gradient(to right, rgba(55,255,139,.14) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(55,255,139,.10) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(900px 600px at 40% 10%, #000 60%, transparent 100%);
+  }
+  .wrap{max-width:1280px; margin:0 auto; padding:24px 22px 80px}
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+    border-bottom:1px solid var(--line2); padding-bottom:14px; margin-bottom:22px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--muted);
+    text-transform:uppercase;
+  }
+  .topbar .left{color:var(--bert)}
+  .topbar .right{text-align:right; color:var(--muted)}
+  .topbar .right div{margin-bottom:4px}
+  .herorow{display:grid; grid-template-columns: 1.5fr .9fr; gap:18px}
+  @media (max-width:1000px){.herorow{grid-template-columns:1fr}}
+  .hero{
+    background: linear-gradient(180deg, rgba(11,18,32,.95), rgba(8,14,26,.92));
+    border:1px solid var(--line); border-radius:22px; padding:28px 28px 24px;
+    box-shadow: var(--shadow); position:relative; overflow:hidden;
+    border-top:2px solid var(--bert2);
+  }
+  .hero h1{ font-size:64px; line-height:.95; margin:0 0 18px; letter-spacing:-.5px; font-weight:800; }
+  @media (max-width:700px){.hero h1{font-size:42px}}
+  .hero p{color:var(--muted); font-size:15px; line-height:1.55; max-width:680px; margin:0 0 18px}
+  .chiprow,.tabs{display:flex; flex-wrap:wrap; gap:8px}
+  .meta-chip,.tab{
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+    padding:7px 12px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(6,10,18,.4);
+  }
+  .tabs{margin-top:14px}
+  .tab{letter-spacing:.08em; text-transform:uppercase}
+  .tab.active{background:linear-gradient(135deg, rgba(55,255,139,.18), rgba(25,199,255,.18)); color:var(--text); border-color:rgba(25,199,255,.32)}
+  .side{display:flex; flex-direction:column; gap:14px}
+  .bluf{
+    border:1px solid var(--warn); border-left:4px solid var(--warn);
+    background: linear-gradient(180deg, rgba(255,204,102,.06), rgba(11,18,32,.92));
+    border-radius:14px; padding:16px 18px;
+  }
+  .bluf b, .bluf strong{color:var(--text)}
+  .bluf .lbl, .corr .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase}
+  .bluf .lbl{color:var(--warn)} .corr .lbl{color:var(--bert)}
+  .bluf p, .corr p{color:var(--muted); font-size:13.5px; line-height:1.55; margin:6px 0 0}
+  .corr{
+    border:1px solid var(--bert); border-left:4px solid var(--bert);
+    background: linear-gradient(180deg, rgba(55,255,139,.06), rgba(11,18,32,.92));
+    border-radius:14px; padding:16px 18px;
+  }
+  .toolchips{display:flex; flex-wrap:wrap; gap:8px}
+  .toolchip{
+    font-family:var(--mono); font-size:11px; padding:6px 12px; border-radius:999px;
+    border:1px solid currentColor; background:transparent;
+  }
+  .tc-claude{color:var(--bert2)} .tc-codex{color:var(--warn)} .tc-gpt{color:var(--bert)} .tc-perplex{color:var(--plum)}
+  .section{margin-top:34px}
+  .sh{
+    display:flex; justify-content:space-between; align-items:baseline; gap:14px;
+    padding-bottom:10px; border-bottom:1px solid var(--line2); margin-bottom:14px;
+  }
+  .sh h2{margin:0; font-size:24px; font-weight:600; letter-spacing:-.2px}
+  .sh .note{font-family:var(--mono); font-size:11px; color:var(--muted2); letter-spacing:.16em; text-transform:uppercase}
+  .kpis{display:grid; grid-template-columns: repeat(4, 1fr); gap:12px}
+  @media (max-width:1100px){.kpis{grid-template-columns: repeat(2, 1fr)}}
+  @media (max-width:640px){.kpis{grid-template-columns: 1fr}}
+  .kpi{
+    border:1px solid var(--line); border-radius:14px; padding:14px 14px 12px;
+    background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+    position:relative; overflow:hidden;
+  }
+  .kpi:before{
+    content:""; position:absolute; inset:-1px; border-radius:14px; pointer-events:none;
+    background: radial-gradient(400px 100px at 20% 10%, rgba(55,255,139,.10), transparent 60%);
+  }
+  .kpi > *{position:relative}
+  .kpi .v{font-family:var(--mono); font-size:26px; font-weight:600; letter-spacing:-.5px}
+  .kpi.amber .v{color:var(--warn)} .kpi.cyan .v{color:var(--bert2)}
+  .kpi.green .v{color:var(--bert)} .kpi.plum .v{color:var(--plum)}
+  .kpi.red .v{color:var(--bad)} .kpi.white .v{color:var(--text)}
+  .kpi .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-top:6px}
+  .kpi .h{font-size:12px; color:var(--muted); line-height:1.45; margin-top:8px}
+  .stack{display:grid; grid-template-columns: repeat(4,1fr); gap:12px}
+  @media (max-width:1100px){.stack{grid-template-columns: repeat(2,1fr)}}
+  @media (max-width:640px){.stack{grid-template-columns: 1fr}}
+  .src{
+    border:1px solid var(--line); border-radius:16px; padding:16px;
+    background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+  }
+  .src .src-name{font-family:var(--mono); font-size:11px; color:var(--bert); letter-spacing:.2em; text-transform:uppercase}
+  .src .src-tit{margin:8px 0 6px; font-size:17px; font-weight:600}
+  .src p{margin:0; font-size:13px; color:var(--muted); line-height:1.55}
+  .ledger{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+  @media (max-width:1000px){.ledger{grid-template-columns:1fr}}
+  .led{
+    border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+    background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+  }
+  .led-head{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--bert)}
+  .led-head.bad{color:var(--bad)}
+  .led-head .dot{width:8px; height:8px; border-radius:50%; background:currentColor; box-shadow:0 0 10px currentColor}
+  .led ul{list-style:none; padding:0; margin:14px 0 0}
+  .led li{display:grid; grid-template-columns: 18px 1fr; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line2); font-size:14px; line-height:1.55}
+  .led li:last-child{border-bottom:none}
+  .led li .pip{color:var(--bert); font-family:var(--mono); padding-top:2px}
+  .led li.bad .pip{color:var(--bad)}
+  .led li b{color:var(--text)}
+  .led li, .led li *{color:var(--muted)}
+  code{
+    font-family:var(--mono); font-size:12px; color:var(--bert2);
+    background:rgba(25,199,255,.08); padding:1px 6px; border-radius:5px;
+    border:1px solid rgba(25,199,255,.18);
+  }
+  .board{display:grid; grid-template-columns: repeat(2,1fr); gap:14px}
+  @media (max-width:1000px){.board{grid-template-columns: 1fr}}
+  .pcard{
+    border:1px solid var(--line); border-radius:16px; padding:18px 20px;
+    background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+    display:flex; flex-direction:column;
+  }
+  .pcard .ptop{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px}
+  .pcard .pnum{font-family:var(--mono); font-size:22px; font-weight:600; color:var(--bert)}
+  .pcard .ppri{font-family:var(--mono); font-size:10px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); color:var(--bert); letter-spacing:.14em; background:rgba(55,255,139,.06)}
+  .pcard h3{margin:6px 0 8px; font-size:19px; font-weight:600}
+  .pcard .pdesc{font-size:13.5px; color:var(--muted); line-height:1.55; margin:0 0 14px}
+  .pcard ul.check{list-style:none; padding:0; margin:0 0 14px}
+  .pcard ul.check li{display:grid; grid-template-columns: 18px 1fr; gap:10px; padding:6px 0; font-size:13.5px; color:var(--muted); line-height:1.45}
+  .pcard ul.check li:before{
+    content:""; width:14px; height:14px; border:1px solid var(--line); border-radius:3px;
+    background:rgba(6,10,18,.4); margin-top:3px;
+  }
+  .pcard .pfoot{margin-top:auto; display:flex; gap:8px; flex-wrap:wrap}
+  .ttbl{
+    width:100%; border-collapse:separate; border-spacing:0;
+    border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  .ttbl th, .ttbl td{padding:13px 14px; text-align:left; font-size:13.5px; vertical-align:top}
+  .ttbl thead th{
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted2); border-bottom:1px solid var(--line); background:rgba(11,18,32,.5);
+  }
+  .ttbl tbody tr:hover{background:rgba(55,255,139,.03)}
+  .st{font-family:var(--mono); font-size:10px; padding:4px 9px; border-radius:6px; letter-spacing:.1em; text-transform:uppercase; border:1px solid currentColor; display:inline-block}
+  .st.shipped{color:var(--bert)} .st.built{color:var(--bert2)} .st.testers{color:var(--warn)}
+  .ttbl b{color:var(--text)}
+  .ttbl td, .ttbl td *{color:var(--muted)}
+  .inv{display:grid; grid-template-columns: repeat(4,1fr); gap:12px}
+  @media (max-width:1100px){.inv{grid-template-columns: repeat(2,1fr)}}
+  @media (max-width:640px){.inv{grid-template-columns: 1fr}}
+  .ivc{
+    border:1px solid var(--line); border-radius:14px; padding:14px;
+    background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+  }
+  .ivt{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px}
+  .ivc h4{margin:0; font-size:15px; font-weight:600}
+  .ivc p{margin:6px 0 0; font-size:12.5px; color:var(--muted); line-height:1.5}
+  .pill{
+    font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:6px;
+    border:1px solid currentColor; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .pill.shipped{color:var(--bert)} .pill.built{color:var(--bert2)} .pill.needs{color:var(--bad)} .pill.merge{color:var(--warn)}
+  .quote{
+    margin-top:24px; border:1px solid rgba(55,255,139,.22);
+    background:
+      radial-gradient(700px 200px at 0% 0%, rgba(55,255,139,.10), transparent 60%),
+      linear-gradient(180deg, rgba(11,18,32,.92), rgba(8,14,26,.88));
+    border-radius:18px; padding:24px 26px; position:relative; overflow:hidden;
+  }
+  .quote .lbl{font-family:var(--mono); font-size:11px; color:var(--bert); letter-spacing:.22em; text-transform:uppercase}
+  .quote .q{margin-top:12px; font-size:32px; line-height:1.25; font-weight:600; max-width:1000px}
+  .quote .a{margin-top:10px; font-family:var(--mono); font-size:12px; color:var(--muted2)}
+  .quote .qm{position:absolute; right:18px; bottom:-30px; font-size:180px; line-height:1; font-family:Georgia, serif; color:rgba(55,255,139,.08); pointer-events:none}
+`;
+
+type NavLink = { href: string; label: string };
+
 function layout(title: string, body: string) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -13,56 +215,27 @@ function layout(title: string, body: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${title}</title>
-    <style>
-      :root { color-scheme: dark; --bg: #081723; --panel: #142637; --text: #edf4f7; --muted: #9db4c2; --accent: #7ce4ff; --good: #55d49b; --warn: #ffcb63; --bad: #ff847c; }
-      * { box-sizing: border-box; }
-      body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: radial-gradient(circle at top, #163449 0%, var(--bg) 56%); color: var(--text); }
-      a { color: inherit; text-decoration: none; }
-      .shell { width: min(1180px, calc(100vw - 40px)); margin: 28px auto 40px; }
-      .topbar, .card, .table-wrap { background: rgba(20, 38, 55, 0.95); border: 1px solid rgba(157, 180, 194, 0.16); border-radius: 26px; box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24); }
-      .topbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; padding: 28px 30px; }
-      .brand { display: flex; gap: 18px; align-items: flex-start; max-width: 740px; }
-      .badge { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(124, 228, 255, 0.35), rgba(85, 212, 155, 0.18)); font-weight: 800; letter-spacing: 0.08em; }
-      .eyebrow { color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; font-size: 12px; }
-      h1, h2, h3, p { margin: 0; }
-      h1 { margin-top: 6px; font: 700 42px/1.05 Georgia, serif; }
-      .brand p { margin-top: 10px; color: var(--muted); max-width: 640px; font-size: 17px; line-height: 1.6; }
-      nav { display: flex; flex-wrap: wrap; gap: 12px; align-content: flex-start; }
-      nav a { padding: 12px 16px; border-radius: 999px; border: 1px solid rgba(157, 180, 194, 0.16); color: var(--muted); font-weight: 600; }
-      nav a.active { color: var(--bg); background: linear-gradient(135deg, var(--accent), #8df0c9); }
-      .section { padding: 30px; }
-      .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
-      .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
-      .stat { padding: 18px; border-radius: 22px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(157, 180, 194, 0.12); }
-      .stat label { display: block; color: var(--muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
-      .stat strong { display: block; margin-top: 10px; font-size: 36px; }
-      .stat span { display: block; margin-top: 8px; color: var(--muted); line-height: 1.5; }
-      .table-wrap { overflow: hidden; margin-top: 22px; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 16px 18px; text-align: left; border-bottom: 1px solid rgba(157, 180, 194, 0.12); vertical-align: top; }
-      th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; }
-      td { line-height: 1.5; }
-      tr:last-child td { border-bottom: none; }
-      .tag { display: inline-flex; padding: 6px 10px; border-radius: 999px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.12em; }
-      .tag.red { background: rgba(255, 132, 124, 0.18); color: var(--bad); }
-      .tag.yellow { background: rgba(255, 203, 99, 0.18); color: var(--warn); }
-      .tag.green { background: rgba(85, 212, 155, 0.18); color: var(--good); }
-      .list { display: grid; gap: 14px; }
-      .item { padding: 18px; border-radius: 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(157, 180, 194, 0.12); }
-      .item p, .footer-note { margin-top: 8px; color: var(--muted); line-height: 1.6; }
-      .section-grid { display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 22px; margin-top: 22px; }
-      code { color: var(--accent); }
-      @media (max-width: 960px) { .section-grid, .stat-grid { grid-template-columns: 1fr; } h1, h2 { font-size: 34px !important; } .shell { width: min(100vw - 24px, 1180px); } .topbar, .section { padding: 22px; } }
-    </style>
+    <style>${STYLE}</style>
   </head>
   <body>
-    <div class="shell">${body}</div>
+    <div class="grid-bg"></div>
+    <div class="wrap">${body}</div>
   </body>
 </html>`;
 }
 
-function topbar(active: string) {
-  const links = [
+function topbar() {
+  return `<div class="topbar"><div class="left">Kinetic Gain · Operator Surface</div><div class="right"><div>Site · bookings.kineticgain.com</div><div>Lane · Hospitality / Travel Tech</div><div>Mode · Recovery-safe guest operations</div></div></div>`;
+}
+
+function renderTabs(active: string, links: NavLink[]) {
+  return `<div class="tabs">${links
+    .map((link) => `<a class="tab ${active === link.href ? "active" : ""}" href="${link.href}">${link.label}</a>`)
+    .join("")}</div>`;
+}
+
+function renderHero(active: string) {
+  const links: NavLink[] = [
     { href: "/", label: "Overview" },
     { href: "/booking-lane", label: "Booking Lane" },
     { href: "/recovery-risks", label: "Recovery Risks" },
@@ -71,46 +244,232 @@ function topbar(active: string) {
     { href: "/docs", label: "Docs" }
   ];
 
-  return `<div class="topbar"><div class="brand"><div class="badge">KG</div><div><div class="eyebrow">Booking Disruption Command Center</div><h1>Booking recovery and guest-trust control plane</h1><p>Disruption queues, blocker evidence, and guest communication posture in one operator surface for hospitality and travel teams.</p></div></div><nav>${links.map((link) => `<a class="${active === link.href ? "active" : ""}" href="${link.href}">${link.label}</a>`).join("")}</nav></div>`;
+  return `${topbar()}
+  <div class="herorow">
+    <section class="hero">
+      <div class="chiprow">
+        <span class="meta-chip">Booking recovery</span>
+        <span class="meta-chip">Guest trust</span>
+        <span class="meta-chip">Inventory + payments</span>
+        <span class="meta-chip">Operator escalation</span>
+      </div>
+      <h1>Booking recovery and guest-trust control plane.</h1>
+      <p>Disruption queues, recovery blockers, and guest communication posture in one operator surface for hospitality and travel teams that need cleaner launches after the system has already gone sideways.</p>
+      ${renderTabs(active, links)}
+    </section>
+    <aside class="side">
+      <div class="bluf">
+        <div class="lbl">Current watch item</div>
+        <p><strong>Payment, OTA inventory, and messaging drift</strong> are the fastest way to turn a manageable disruption into guest-visible trust damage.</p>
+      </div>
+      <div class="corr">
+        <div class="lbl">Operator correction</div>
+        <p>Map every disruption to proof, owner, and reply-window posture before support, PMS, and guest messaging start promising different things.</p>
+      </div>
+      <div class="toolchips">
+        <span class="toolchip tc-codex">codex</span>
+        <span class="toolchip tc-claude">claude</span>
+        <span class="toolchip tc-gpt">webops</span>
+        <span class="toolchip tc-perplex">revops</span>
+      </div>
+    </aside>
+  </div>`;
 }
 
-function stateClass(value: "red" | "yellow" | "green") {
-  return value;
+function statusClass(value: "red" | "yellow" | "green") {
+  if (value === "red") return "needs";
+  if (value === "yellow") return "merge";
+  return "shipped";
+}
+
+function heroShell(active: string, content: string) {
+  return `${renderHero(active)}${content}`;
 }
 
 export function renderOverview() {
   const metrics = summary();
-  return layout("Booking Disruption Command Center", `${topbar("/")}
-    <div class="card section">
-      <div class="eyebrow">Overview</div>
-      <h2 style="margin: 6px 0 10px; font: 700 48px/1 Georgia, serif;">Bookings break when payment, inventory, and guest communication drift faster than the recovery system can respond.</h2>
-      <p>This command center makes the operating layer explicit: which disruptions are live, which blockers still need proof, and which guest packets need intervention before service trust erodes further.</p>
-      <div class="stat-grid">
-        <div class="stat"><label>Incidents</label><strong>${metrics.incidents}</strong><span>Active disruption records tied to property, owner, and next action.</span></div>
-        <div class="stat"><label>Urgent incidents</label><strong>${metrics.urgentIncidents}</strong><span>Red incidents where guest impact or revenue loss is already building.</span></div>
-        <div class="stat"><label>Blocked recoveries</label><strong>${metrics.blockedRecoveries}</strong><span>Payment, inventory, and vendor blockers still waiting on proof.</span></div>
-        <div class="stat"><label>Fragile guest packets</label><strong>${metrics.fragileGuestPackets}</strong><span>Guest-facing recovery messages that still need stronger backing.</span></div>
-      </div>
-      <div class="footer-note">${metrics.recommendation}</div>
-    </div>`);
+  const packets = guestCommunication();
+  return layout(
+    "Booking Disruption Command Center",
+    heroShell(
+      "/",
+      `<section class="section">
+        <div class="sh"><h2>Control snapshot</h2><div class="note">Recovery-safe hospitality ops</div></div>
+        <div class="kpis">
+          <div class="kpi cyan"><div class="v">${metrics.incidents}</div><div class="lbl">Incidents</div><div class="h">Active disruption records tied to property, owner, and next action.</div></div>
+          <div class="kpi red"><div class="v">${metrics.urgentIncidents}</div><div class="lbl">Urgent incidents</div><div class="h">Red incidents where guest impact or revenue loss is already building.</div></div>
+          <div class="kpi amber"><div class="v">${metrics.blockedRecoveries}</div><div class="lbl">Blocked recoveries</div><div class="h">Payment, inventory, and vendor blockers still waiting on proof.</div></div>
+          <div class="kpi plum"><div class="v">${metrics.fragileGuestPackets}</div><div class="lbl">Fragile guest packets</div><div class="h">Guest-facing recovery messages that still need stronger backing.</div></div>
+        </div>
+        <div class="quote">
+          <div class="lbl">Primary recommendation</div>
+          <div class="q">${metrics.recommendation}</div>
+          <div class="a">Recovery trust comes from aligned payment, inventory, and communication proof.</div>
+          <div class="qm">”</div>
+        </div>
+      </section>
+      <section class="section">
+        <div class="sh"><h2>Guest communication packets</h2><div class="note">What can safely go out next</div></div>
+        <div class="inv">
+          ${packets
+            .map(
+              (packet) => `<article class="ivc">
+                <div class="ivt"><h4>${packet.packetId}</h4><span class="pill ${statusClass(packet.status)}">${packet.status}</span></div>
+                <p><b>${packet.audience}</b></p>
+                <p>${packet.confidenceScore}% confidence · ${packet.replyWindowMinutes} minutes to next reply window.</p>
+                <p>${packet.decisionNote}</p>
+              </article>`
+            )
+            .join("")}
+        </div>
+      </section>`
+    )
+  );
 }
 
 export function renderBookingLane() {
-  return layout("Booking Disruption Command Center — Booking Lane", `${topbar("/booking-lane")}<div class="card section"><div class="eyebrow">Booking Lane</div><h2 style="margin: 6px 0 10px; font: 700 46px/1 Georgia, serif;">The queue should show which disruption is changing, why it matters, and who owns the next safe move.</h2><p>Each row ties booking context to guest impact, downstream systems, and the action needed to preserve recovery trust.</p></div><div class="table-wrap section"><table><thead><tr><th>Incident</th><th>Excerpt</th><th>Owner</th><th>Next Action</th><th>Risk</th></tr></thead><tbody>${bookingLane().map((item)=>`<tr><td><strong>${item.property}</strong><br />${item.incidentId}<br />${item.channel} · ${item.guestSegment}</td><td>${item.excerpt}</td><td>${item.owner}</td><td>${item.nextAction}</td><td><span class="tag ${stateClass(item.risk)}">${item.risk}</span></td></tr>`).join("")}</tbody></table></div>`);
+  const rows = bookingLane();
+  return layout(
+    "Booking Disruption Command Center — Booking Lane",
+    heroShell(
+      "/booking-lane",
+      `<section class="section">
+        <div class="sh"><h2>Booking lane</h2><div class="note">Disruptions under pressure</div></div>
+        <table class="ttbl">
+          <thead><tr><th>Incident</th><th>Owner</th><th>Risk</th><th>Next move</th></tr></thead>
+          <tbody>
+            ${rows
+              .map(
+                (item) => `<tr>
+                  <td><b>${item.property} · ${item.channel}</b><br />${item.incidentId} · ${item.guestSegment}<br />${item.excerpt}</td>
+                  <td>${item.owner}</td>
+                  <td><span class="st ${statusClass(item.risk)}">${item.risk}</span></td>
+                  <td>${item.nextAction}</td>
+                </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </section>`
+    )
+  );
 }
 
 export function renderRecoveryRisks() {
-  return layout("Booking Disruption Command Center — Recovery Risks", `${topbar("/recovery-risks")}<div class="card section"><div class="eyebrow">Recovery Risks</div><h2 style="margin: 6px 0 10px; font: 700 46px/1 Georgia, serif;">Most booking failures are actually recovery-proof failures with a missing owner or evidence packet.</h2><p>This lane maps blocker sources to required evidence, owner lanes, readiness, and the impact area if recovery stays unresolved.</p></div><div class="section-grid"><div class="table-wrap section"><table><thead><tr><th>Blocker</th><th>Required Evidence</th><th>Owner</th><th>Readiness</th></tr></thead><tbody>${recoveryRisks().map((item)=>`<tr><td><strong>${item.blocker}</strong><br />${item.source}<br />${item.impactArea}</td><td>${item.requiredEvidence}</td><td>${item.owner}</td><td><span class="tag ${stateClass(item.readiness)}">${item.readiness}</span></td></tr>`).join("")}</tbody></table></div><div class="card section"><div class="eyebrow">Dependency Blockers</div><h3>Where guest recovery is likely to stall.</h3><div class="list">${recoveryRisks().map((item)=>`<div class="item"><strong>${item.riskId} · ${item.owner}</strong><p>${item.note}</p><span>${item.source} · ${item.impactArea}</span></div>`).join("")}</div></div></div>`);
+  const risks = recoveryRisks();
+  return layout(
+    "Booking Disruption Command Center — Recovery Risks",
+    heroShell(
+      "/recovery-risks",
+      `<section class="section">
+        <div class="sh"><h2>Recovery risks</h2><div class="note">Evidence gaps before guest promises</div></div>
+        <div class="ledger">
+          <div class="led">
+            <div class="led-head"><span class="dot"></span>Proof packets required</div>
+            <ul>
+              ${risks
+                .map(
+                  (item) => `<li class="${item.readiness === "red" ? "bad" : ""}"><span class="pip">→</span><div><b>${item.riskId} · ${item.blocker}</b><br />${item.requiredEvidence}</div></li>`
+                )
+                .join("")}
+            </ul>
+          </div>
+          <div class="led">
+            <div class="led-head bad"><span class="dot"></span>Impact areas at risk</div>
+            <ul>
+              ${risks
+                .map(
+                  (item) => `<li class="${item.readiness === "red" ? "bad" : ""}"><span class="pip">→</span><div><b>${item.riskId} · ${item.owner}</b> · ${item.impactArea}<br />${item.note}</div></li>`
+                )
+                .join("")}
+            </ul>
+          </div>
+        </div>
+      </section>`
+    )
+  );
 }
 
 export function renderGuestCommunication() {
-  return layout("Booking Disruption Command Center — Guest Communication", `${topbar("/guest-communication")}<div class="card section"><div class="eyebrow">Guest Communication</div><h2 style="margin: 6px 0 10px; font: 700 46px/1 Georgia, serif;">Guest posture matters when the next arrival or support window is shorter than the next recovery cycle.</h2><p>This lane surfaces which communication packets are safe, which still need blockers cleared, and where service recovery needs immediate intervention.</p></div><div class="card-grid" style="margin-top: 22px;">${guestCommunication().map((packet)=>`<div class="card section"><div class="eyebrow">${packet.packetId}</div><h3>${packet.audience}</h3><div class="stat-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0;"><div class="stat"><label>Confidence</label><strong style="font-size: 30px;">${packet.confidenceScore}%</strong><span>${packet.audience}</span></div><div class="stat"><label>Status</label><strong style="font-size: 30px;"><span class="tag ${stateClass(packet.status)}">${packet.status}</span></strong><span>${packet.blocker}</span></div></div><div class="footer-note">${packet.replyWindowMinutes} minutes to next reply window · ${packet.decisionNote}</div></div>`).join("")}</div>`);
+  const packets = guestCommunication();
+  return layout(
+    "Booking Disruption Command Center — Guest Communication",
+    heroShell(
+      "/guest-communication",
+      `<section class="section">
+        <div class="sh"><h2>Guest communication</h2><div class="note">Reply windows and trust posture</div></div>
+        <div class="board">
+          ${packets
+            .map(
+              (packet) => `<article class="pcard">
+                <div class="ptop">
+                  <div class="pnum">${packet.confidenceScore}%</div>
+                  <div class="ppri">${packet.packetId}</div>
+                </div>
+                <h3>${packet.audience}</h3>
+                <p class="pdesc">${packet.decisionNote}</p>
+                <ul class="check">
+                  <li>Status: ${packet.status}</li>
+                  <li>Blocker: ${packet.blocker}</li>
+                  <li>Reply window: ${packet.replyWindowMinutes} minutes</li>
+                </ul>
+                <div class="pfoot"><span class="pill ${statusClass(packet.status)}">${packet.status}</span></div>
+              </article>`
+            )
+            .join("")}
+        </div>
+      </section>`
+    )
+  );
 }
 
 export function renderVerification() {
-  return layout("Booking Disruption Command Center — Verification", `${topbar("/verification")}<div class="card section"><div class="eyebrow">Verification</div><h2 style="margin: 6px 0 10px; font: 700 46px/1 Georgia, serif;">What this repo proves about disruption recovery, guest trust, and hospitality operations.</h2><div class="list">${verification().map((item)=>`<div class="item"><strong>${item}</strong></div>`).join("")}</div></div>`);
+  const points = verification();
+  return layout(
+    "Booking Disruption Command Center — Verification",
+    heroShell(
+      "/verification",
+      `<section class="section">
+        <div class="sh"><h2>Verification</h2><div class="note">What this surface proves</div></div>
+        <div class="ledger">
+          <div class="led">
+            <div class="led-head"><span class="dot"></span>Operator-grade evidence</div>
+            <ul>${points.map((item) => `<li><span class="pip">→</span><div>${item}</div></li>`).join("")}</ul>
+          </div>
+          <div class="led">
+            <div class="led-head"><span class="dot"></span>KG Embedded fit</div>
+            <ul>
+              <li><span class="pip">→</span><div>Booking, payment, and recovery data can surface in-product without exposing unsafe write paths.</div></li>
+              <li><span class="pip">→</span><div>Guest communication posture and evidence stay connected to buyer-facing dashboards.</div></li>
+              <li><span class="pip">→</span><div>Synthetic data only; this repo demonstrates system shape, not production guest records.</div></li>
+            </ul>
+          </div>
+        </div>
+      </section>`
+    )
+  );
 }
 
 export function renderDocs() {
-  return layout("Booking Disruption Command Center — Docs", `${topbar("/docs")}<div class="card section"><div class="eyebrow">Docs</div><h2 style="margin: 6px 0 10px; font: 700 46px/1 Georgia, serif;">A command center for booking disruptions, recovery blockers, and guest-safe operational trust.</h2><p>This repo models the operating layer between disruption intake and service recovery: booking visibility, downstream evidence, communication posture, vendor pressure, and operator-safe interventions.</p><div class="footer-note">Routes: <code>/</code> · <code>/booking-lane</code> · <code>/recovery-risks</code> · <code>/guest-communication</code> · <code>/verification</code> · <code>/docs</code></div></div>`);
+  return layout(
+    "Booking Disruption Command Center — Docs",
+    heroShell(
+      "/docs",
+      `<section class="section">
+        <div class="sh"><h2>System docs</h2><div class="note">Routes and control surfaces</div></div>
+        <div class="stack">
+          <article class="src"><div class="src-name">Control plane</div><div class="src-tit">Booking lane</div><p>Disruption-by-disruption queue with owner routing, guest segment, and next action.</p></article>
+          <article class="src"><div class="src-name">Risk map</div><div class="src-tit">Recovery risks</div><p>Required evidence, owner lanes, and impact areas for blocked service restoration.</p></article>
+          <article class="src"><div class="src-name">Guest view</div><div class="src-tit">Guest communication</div><p>Packet-level confidence, blocker state, and next reply-window timing.</p></article>
+          <article class="src"><div class="src-name">Embedded tie-back</div><div class="src-tit">KG Embedded</div><p>Security-first in-product analytics extension for booking recovery and service workflows.</p></article>
+        </div>
+        <div class="quote">
+          <div class="lbl">Route surface</div>
+          <div class="q"><code>/</code> · <code>/booking-lane</code> · <code>/recovery-risks</code> · <code>/guest-communication</code> · <code>/verification</code> · <code>/docs</code></div>
+          <div class="a">The shell is now standardized for future operator surfaces.</div>
+          <div class="qm">”</div>
+        </div>
+      </section>`
+    )
+  );
 }

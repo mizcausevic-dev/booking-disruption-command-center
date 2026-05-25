@@ -38,7 +38,7 @@ describe("render", () => {
     for (const incident of bookingIncidents) {
       expect(html).toContain(incident.incidentId);
     }
-    expect(html).toContain('class="tag red"');
+    expect(html).toContain('class="st needs"');
   });
 
   test("recovery risks list every blocker with readiness tags", () => {
@@ -46,8 +46,8 @@ describe("render", () => {
     for (const block of recoveryBlockers) {
       expect(html).toContain(block.riskId);
     }
-    expect(html).toContain('class="tag red"');
-    expect(html).toContain('class="tag yellow"');
+    expect(html).toContain('class="bad"');
+    expect(html).toContain('Overbooking prevention');
   });
 
   test("guest communication shows packets and confidence scores", () => {
