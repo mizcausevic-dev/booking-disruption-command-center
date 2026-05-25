@@ -5,6 +5,7 @@
 [![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot&logoColor=white)](./.github/dependabot.yml)
 [![Deploy](https://github.com/mizcausevic-dev/booking-disruption-command-center/actions/workflows/pages.yml/badge.svg)](https://github.com/mizcausevic-dev/booking-disruption-command-center/actions/workflows/pages.yml)
 
+
 TypeScript command center for booking disruptions, recovery blockers, guest communication posture, and hospitality-grade service restoration operations.
 
 ## Why this exists
@@ -67,6 +68,19 @@ Open:
 - `npm run smoke`
 - `npm run prerender`
 - `npm run render:assets`
+
+## Production status
+
+<!-- Maintained by Claude Code (Platform/SRE lane) after v1.0-prod hardening. -->
+
+| Aspect | Status |
+|--------|--------|
+| CI | Node 20 + 22 matrix — lint · typecheck · coverage · build · demo · smoke · `npm audit` ([workflow](./.github/workflows/ci.yml)) |
+| Test coverage | 100% statements on `src/services/` (gate: ≥ 60%) |
+| License | [AGPL-3.0-or-later](./LICENSE) |
+| Dependencies | Dependabot weekly (npm + GitHub Actions); `npm audit --audit-level=high` in CI |
+| Security | [SECURITY.md](./SECURITY.md) — 0 known high/critical advisories at v1.0-prod |
+| Deploy | Static prerender → **https://bookings.kineticgain.com/** (GitHub Pages, [pages workflow](./.github/workflows/pages.yml)) |
 
 ## Docs
 

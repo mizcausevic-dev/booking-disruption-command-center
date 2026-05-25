@@ -2,11 +2,11 @@
 
 ## Scope
 
-This repository is a **reference control plane** for booking disruption and
-guest recovery workflows — disruption triage, recovery-risk mapping, and
-communication posture. It ships synthetic, non-sensitive sample data only. It
-is not a production system of record and should not be deployed with real
-guest, booking, or payment data without an independent security review.
+This repository is a **reference control plane** for booking-disruption triage,
+recovery-risk mapping, and guest-communication posture across travel/hospitality
+operations. It ships synthetic, non-sensitive sample data only. It is not a
+production system of record and should not be deployed with real booking, guest,
+or customer data without an independent security review.
 
 ## Supported versions
 
